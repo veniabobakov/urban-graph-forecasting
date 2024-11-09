@@ -7,7 +7,6 @@ from shapely.geometry import Point
 from rtree import index
 
 
-
 def create_road_graph(path):
     roads = gpd.read_file(path)
     # Преобразуем данные в проекцию, которая использует метры (например, EPSG:32633)

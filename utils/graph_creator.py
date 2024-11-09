@@ -25,14 +25,17 @@ def create_road_graph(path):
 
     # Создаем новый граф, содержащий только вершины и рёбра самой крупной компоненты
     G_largest = G.subgraph(largest_component).copy()
+    print("before", len(list(G_largest.edges(data=True))))
 
-    for node in G.nodes:
-        G.nodes[node]['type'] = 'road'
-
-    for u, v, data in G.edges(data=True):
+    for u, v, data in G_largest.edges(data=True):
         # Добавляем или обновляем атрибут 'capacity'
         data['capacity'] = 800  # Задаем значение пропускной способности
         data['coast'] = 1
+
+    for node, data in G_largest.nodes(data=True):
+        data['type'] = 'road'
+
+    print("Edges after updates:", len(list(G_largest.edges(data=True))))
 
     return G_largest
 
@@ -75,7 +78,7 @@ def add_nodes_to_graph(G, path, threshold, **kwarg):
             for j in possible_matches_index:
                 neighbor = list(G.nodes)[j]  # Получаем точку из графа
                 distance = geodesic((point.y, point.x), (neighbor[1], neighbor[0])).meters  # Вычисляем расстояние
-                if distance < threshold and G.nodes[neighbor].get('type', None) == 'road':
+                if distance < threshold:
                     G.add_edge((point.x, point.y), neighbor, coast=0, capacity=800)
                     matches_found = True  # нашли подходящее ребро
 
@@ -110,7 +113,7 @@ def add_nodes_to_graph(G, path, threshold, **kwarg):
             for j in possible_matches_index:
                 neighbor = list(G.nodes)[j]
                 distance = geodesic((centroid.y, centroid.x), (neighbor[1], neighbor[0])).meters
-                if distance < threshold and G.nodes[neighbor].get('type', None) == 'road':
+                if distance < threshold:
                     G.add_edge((centroid.x, centroid.y), neighbor, coast=0, capacity=800)
                     matches_found = True
 
