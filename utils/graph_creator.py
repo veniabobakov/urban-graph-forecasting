@@ -29,6 +29,11 @@ def create_road_graph(path):
     for node in G.nodes:
         G.nodes[node]['type'] = 'road'
 
+    for u, v, data in G.edges(data=True):
+        # Добавляем или обновляем атрибут 'capacity'
+        data['capacity'] = 800  # Задаем значение пропускной способности
+        data['coast'] = 1
+
     return G_largest
 
 
@@ -71,7 +76,7 @@ def add_nodes_to_graph(G, path, threshold, **kwarg):
                 neighbor = list(G.nodes)[j]  # Получаем точку из графа
                 distance = geodesic((point.y, point.x), (neighbor[1], neighbor[0])).meters  # Вычисляем расстояние
                 if distance < threshold and G.nodes[neighbor].get('type', None) == 'road':
-                    G.add_edge((point.x, point.y), neighbor)
+                    G.add_edge((point.x, point.y), neighbor, coast=0, capacity=800)
                     matches_found = True  # нашли подходящее ребро
 
             # Если не нашли, присоединяем ближайшую вершину
@@ -87,7 +92,7 @@ def add_nodes_to_graph(G, path, threshold, **kwarg):
                         nearest_node = neighbor
                 # Добавляем ближайшее ребро
                 if nearest_node:
-                    G.add_edge((point.x, point.y), nearest_node)
+                    G.add_edge((point.x, point.y), nearest_node, coast=0, capacity=800)
 
     else:  # для школ
         df = df[df['Type'] == 'Школы']
@@ -95,7 +100,8 @@ def add_nodes_to_graph(G, path, threshold, **kwarg):
         print(len(df))
         for i in range(len(df)):
             centroid = df.loc[i]['geometry'].centroid  # получаем центр школы
-            G.add_node((centroid.x, centroid.y), type=kwarg['type'], name=df.loc[i][kwarg['name']], id=df.loc[i][kwarg['id']])
+            G.add_node((centroid.x, centroid.y), type=kwarg['type'], name=df.loc[i][kwarg['name']],
+                       id=df.loc[i][kwarg['id']])
             print(i)
             # Ищем ближайшие вершины в графе с помощью индекса
             possible_matches_index = list(idx.nearest((centroid.x, centroid.y, centroid.x, centroid.y), 20))
@@ -105,7 +111,7 @@ def add_nodes_to_graph(G, path, threshold, **kwarg):
                 neighbor = list(G.nodes)[j]
                 distance = geodesic((centroid.y, centroid.x), (neighbor[1], neighbor[0])).meters
                 if distance < threshold and G.nodes[neighbor].get('type', None) == 'road':
-                    G.add_edge((centroid.x, centroid.y), neighbor)
+                    G.add_edge((centroid.x, centroid.y), neighbor, coast=0, capacity=800)
                     matches_found = True
 
             # Если не нашли, присоединяем ближайшую вершину
@@ -119,6 +125,6 @@ def add_nodes_to_graph(G, path, threshold, **kwarg):
                         min_distance = distance
                         nearest_node = neighbor
                 if nearest_node:
-                    G.add_edge((centroid.x, centroid.y), nearest_node)
+                    G.add_edge((centroid.x, centroid.y), nearest_node, coast=0, capacity=800)
 
     return G
