@@ -17,7 +17,7 @@ def create_road_graph(path):
 
     # Преобразуем обратно в EPSG:4326 для отображения на карте
     roads_filtered = roads_filtered.to_crs(epsg=4326)
-    G = momepy.gdf_to_nx(roads_filtered, multigraph=False)
+    G = momepy.gdf_to_nx(roads_filtered, multigraph=False, approach="primal")
     components = list(nx.connected_components(G))
 
     # Находим самую крупную компоненту
